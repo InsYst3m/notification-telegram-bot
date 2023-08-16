@@ -3,7 +3,7 @@ using Telegram.Bot.Types;
 
 namespace NotificationTelegramBot.API.Services.Interfaces
 {
-    public interface ITelegramBotService : IHostedService
+    public interface ITelegramBotService : IHostedService, IDiagnosticService
     {
         /// <summary>
         /// Handles errors occurs in the telegram <paramref name="client"/>.

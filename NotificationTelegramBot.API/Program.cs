@@ -37,7 +37,9 @@ namespace NotificationTelegramBot.API
 
                     return new TelegramBotClient(options.Token);
                 });
+
             services.AddSingleton<ITelegramBotService, TelegramBotService>();
+            services.AddSingleton<IDiagnosticService>(x => x.GetRequiredService<ITelegramBotService>());
 
             services.AddHostedService(x => x.GetRequiredService<ITelegramBotService>());
 

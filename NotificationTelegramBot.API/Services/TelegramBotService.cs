@@ -11,7 +11,7 @@ using Telegram.Bot.Types.Enums;
 
 namespace NotificationTelegramBot.API.Services
 {
-    public sealed class TelegramBotService : ITelegramBotService, IDisposable, IDiagnosticService
+    public sealed class TelegramBotService : ITelegramBotService, IDisposable
     {
         private readonly NotificationTelegramBotOptions _options;
         private readonly ITelegramBotClient _client;
@@ -31,15 +31,21 @@ namespace NotificationTelegramBot.API.Services
             _tokenSource = new CancellationTokenSource();
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        #region IHostedService Implementation
+
+        public Task StartAsync(CancellationToken cancellationToken)
         {
             ReceiverOptions receiverOptions = new();
 
-            await _client.ReceiveAsync(
+            _client.ReceiveAsync(
                 HandleUpdateAsync,
                 HandleErrorAsync,
                 receiverOptions,
                 _tokenSource.Token);
+
+            _logger.LogInformation("Telegram bot was successfully initialized.");
+
+            return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
@@ -48,6 +54,8 @@ namespace NotificationTelegramBot.API.Services
 
             return Task.CompletedTask;
         }
+
+        #endregion
 
         #region ITelegramBotService Implementation
 
@@ -92,11 +100,25 @@ namespace NotificationTelegramBot.API.Services
         /// </summary>
         /// <param name="message"></param>
         /// <param name="cancellationToken"></param>
-        private Task OnMessageReceivedAsync(Message message, CancellationToken cancellationToken)
+        private async Task OnMessageReceivedAsync(Message message, CancellationToken cancellationToken)
         {
-            _client.SendTextMessageAsync(_options.ChatId, $"ECHO: {message.Text}");
+            await _client.SendTextMessageAsync(_options.ChatId, $"ECHO: {message.Text}", cancellationToken: cancellationToken);
+        }
 
-            return Task.CompletedTask;
+        #endregion
+
+        #region IDiagnosticService Implementation
+
+        private readonly DateTime _serviceStartedTime = DateTime.UtcNow;
+        private TimeSpan _serviceUptime => DateTime.UtcNow - _serviceStartedTime;
+
+        public Dictionary<string, string> GetDiagnosticsInfo()
+        {
+            return new Dictionary<string, string>
+            {
+                { "Service Started Time MSK", TimeZoneInfo.ConvertTimeFromUtc(_serviceStartedTime, TimeZoneInfo.FindSystemTimeZoneById("MSK")).ToString() },
+                { "Service Uptime", _serviceUptime.ToString() }
+            };
         }
 
         #endregion
