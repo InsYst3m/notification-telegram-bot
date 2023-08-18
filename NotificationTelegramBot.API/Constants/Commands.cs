@@ -6,5 +6,6 @@
     public static class Commands
     {
         public const string GET_COMMAND = "/get";
+        public const string ASSETS_COMMAND = "/assets";
     }
 }

@@ -117,6 +117,8 @@ namespace NotificationTelegramBot.API.Services
             {
                 result = message.Text switch
                 {
+                    string text when text.Equals(Commands.ASSETS_COMMAND, StringComparison.OrdinalIgnoreCase) =>
+                        await ProcessAssetsCommandAsync(text, cancellationToken),
                     string text when text.StartsWith(Commands.GET_COMMAND) =>
                         await ProcessGetCommandAsync(text, cancellationToken),
                     _ => $"Unable to parse command: '{message.Text}'."
@@ -151,6 +153,18 @@ namespace NotificationTelegramBot.API.Services
             }
 
             return $"Unable to parse command: '{getCommand}'.";
+        }
+
+        private async Task<string> ProcessAssetsCommandAsync(string assetsCommand, CancellationToken cancellationToken)
+        {
+            List<string> availableAssets = await _coinApiClient.GetAvailableAssetsAsync(cancellationToken);
+
+            if (availableAssets.Any())
+            {
+                return string.Join(", ", availableAssets);
+            }
+
+            return "Unable to get available assets.";
         }
 
         #endregion
