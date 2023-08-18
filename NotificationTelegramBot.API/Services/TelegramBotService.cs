@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using System.Threading;
 
 using Microsoft.Extensions.Options;
 
@@ -112,34 +113,44 @@ namespace NotificationTelegramBot.API.Services
         {
             string result = string.Empty;
 
-            if (!string.IsNullOrWhiteSpace(message.Text) &&
-                message.Text.StartsWith("/get"))
+            if (!string.IsNullOrWhiteSpace(message.Text))
             {
-                Match match = Regexes.GetCommandRegex().Match(message.Text);
-
-                if (match.Success)
+                result = message.Text switch
                 {
-                    string asset = match.Groups[2].Value;
-
-                    try
-                    {
-                        Asset foundAsset = await _coinApiClient.GetCryptoAssetAsync(asset, cancellationToken);
-
-                        result = $"{foundAsset.Name}: {foundAsset.PriceUsd:0.000 USD}";
-                    }
-                    catch
-                    {
-                        result = $"Unable to find asset: '{asset}'.";
-                    }
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(result))
-            {
-                result = $"ECHO: {message.Text}";
+                    string text when text.StartsWith(Commands.GET_COMMAND) =>
+                        await ProcessGetCommandAsync(text, cancellationToken),
+                    _ => $"Unable to parse command: '{message.Text}'."
+                };
             }
 
             await _telegramClient.SendTextMessageAsync(_options.ChatId, result, cancellationToken: cancellationToken);
+        }
+
+        #endregion
+
+        #region Private Members
+
+        private async Task<string> ProcessGetCommandAsync(string getCommand, CancellationToken cancellationToken)
+        {
+            Match match = Regexes.GetCommandRegex().Match(getCommand);
+
+            if (match.Success)
+            {
+                string asset = match.Groups[2].Value;
+
+                try
+                {
+                    Asset foundAsset = await _coinApiClient.GetCryptoAssetAsync(asset, cancellationToken);
+
+                    return $"{foundAsset.Name}: {foundAsset.PriceUsd:0.000 USD}";
+                }
+                catch
+                {
+                    return $"Unable to found asset: '{asset}'.";
+                }
+            }
+
+            return $"Unable to parse command: '{getCommand}'.";
         }
 
         #endregion
