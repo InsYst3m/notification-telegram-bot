@@ -1,5 +1,10 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Text.RegularExpressions;
 
+using Microsoft.Extensions.Options;
+
+using NotificationTelegramBot.API.Clients.Interfaces;
+using NotificationTelegramBot.API.Constants;
+using NotificationTelegramBot.API.Entities;
 using NotificationTelegramBot.API.Options;
 using NotificationTelegramBot.API.Services.Interfaces;
 
@@ -14,17 +19,20 @@ namespace NotificationTelegramBot.API.Services
     public sealed class TelegramBotService : ITelegramBotService, IDisposable
     {
         private readonly NotificationTelegramBotOptions _options;
-        private readonly ITelegramBotClient _client;
+        private readonly ITelegramBotClient _telegramClient;
+        private readonly ICoinApiClient _coinApiClient;
         private readonly ILogger<TelegramBotService> _logger;
         private readonly CancellationTokenSource _tokenSource;
 
         public TelegramBotService(
             IOptions<NotificationTelegramBotOptions> options,
             ITelegramBotClient client,
+            ICoinApiClient coinApiClient,
             ILogger<TelegramBotService> logger)
         {
             _ = options ?? throw new ArgumentNullException(nameof(options));
-            _client = client ?? throw new ArgumentNullException(nameof(client));
+            _telegramClient = client ?? throw new ArgumentNullException(nameof(client));
+            _coinApiClient = coinApiClient ?? throw new ArgumentNullException(nameof(coinApiClient));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             _options = options.Value;
@@ -37,7 +45,7 @@ namespace NotificationTelegramBot.API.Services
         {
             ReceiverOptions receiverOptions = new();
 
-            _client.ReceiveAsync(
+            _telegramClient.ReceiveAsync(
                 HandleUpdateAsync,
                 HandleErrorAsync,
                 receiverOptions,
@@ -102,7 +110,36 @@ namespace NotificationTelegramBot.API.Services
         /// <param name="cancellationToken"></param>
         private async Task OnMessageReceivedAsync(Message message, CancellationToken cancellationToken)
         {
-            await _client.SendTextMessageAsync(_options.ChatId, $"ECHO: {message.Text}", cancellationToken: cancellationToken);
+            string result = string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(message.Text) &&
+                message.Text.StartsWith("/get"))
+            {
+                Match match = Regexes.GetCommandRegex().Match(message.Text);
+
+                if (match.Success)
+                {
+                    string asset = match.Groups[2].Value;
+
+                    try
+                    {
+                        Asset foundAsset = await _coinApiClient.GetCryptoAssetAsync(asset, cancellationToken);
+
+                        result = $"{foundAsset.Name}: {foundAsset.PriceUsd:0.000 USD}";
+                    }
+                    catch
+                    {
+                        result = $"Unable to find asset: '{asset}'.";
+                    }
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(result))
+            {
+                result = $"ECHO: {message.Text}";
+            }
+
+            await _telegramClient.SendTextMessageAsync(_options.ChatId, result, cancellationToken: cancellationToken);
         }
 
         #endregion

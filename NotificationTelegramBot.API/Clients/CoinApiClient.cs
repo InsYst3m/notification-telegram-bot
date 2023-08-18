@@ -26,11 +26,15 @@ namespace NotificationTelegramBot.API.Clients
 
             string jsonResponse = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
 
-            Asset? result = JsonSerializer.Deserialize<Asset>(jsonResponse, new JsonSerializerOptions
-            {
-                NumberHandling = JsonNumberHandling.AllowReadingFromString,
-                PropertyNameCaseInsensitive = true
-            });
+            JsonDocument jsonDocument = JsonDocument.Parse(jsonResponse);
+            Asset? result = jsonDocument.RootElement
+                .GetProperty("data")
+                .Deserialize<Asset>(
+                    new JsonSerializerOptions
+                    {
+                        NumberHandling = JsonNumberHandling.AllowReadingFromString,
+                        PropertyNameCaseInsensitive = true
+                    });
 
             if (result is null)
             {

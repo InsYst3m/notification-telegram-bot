@@ -11,6 +11,6 @@ namespace NotificationTelegramBot.API.Options
         public required string ServiceUrl { get; set; }
 
         [Required]
-        public required int RequestTimeoutInSec { get; set; }
+        public required int TimeoutInSec { get; set; }
     }
 }
