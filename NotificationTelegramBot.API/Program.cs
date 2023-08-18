@@ -1,5 +1,7 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
+using NotificationTelegramBot.API.Clients;
 using NotificationTelegramBot.API.Options;
 using NotificationTelegramBot.API.Services;
 using NotificationTelegramBot.API.Services.Interfaces;
@@ -29,6 +31,12 @@ namespace NotificationTelegramBot.API
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
 
+            services
+                .AddOptions<CoinApiOptions>()
+                .BindConfiguration(nameof(CoinApiOptions))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
             services.AddSingleton<ITelegramBotClient, TelegramBotClient>(
                 serviceProvider =>
                 {
@@ -37,6 +45,15 @@ namespace NotificationTelegramBot.API
 
                     return new TelegramBotClient(options.Token);
                 });
+
+            services.AddHttpClient(nameof(CoinApiClient), (serviceProvider, httpClient) =>
+            {
+                CoinApiOptions options =
+                    serviceProvider.GetRequiredService<IOptions<CoinApiOptions>>().Value;
+
+                httpClient.BaseAddress = new Uri(options.ServiceUrl);
+                httpClient.Timeout = TimeSpan.FromSeconds(options.RequestTimeoutInSec);
+            });
 
             services.AddSingleton<ITelegramBotService, TelegramBotService>();
             services.AddSingleton<IDiagnosticService>(x => x.GetRequiredService<ITelegramBotService>());
