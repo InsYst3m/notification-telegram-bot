@@ -7,6 +7,7 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 COPY ["NotificationTelegramBot.API/NotificationTelegramBot.API.csproj", "NotificationTelegramBot.API/"]
+RUN ls -a
 RUN dotnet restore "NotificationTelegramBot.API/NotificationTelegramBot.API.csproj"
 COPY . .
 WORKDIR "/src/NotificationTelegramBot.API"
