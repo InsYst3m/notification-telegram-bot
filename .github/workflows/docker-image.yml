@@ -21,6 +21,5 @@ jobs:
       run: |
         docker login -u $DOCKER_USER -p $DOCKER_ACCESSTOKEN
         cd Src
-        docker build --platform linux/arm64 -t insyst3m/notification-telegram-bot:${{ steps.docker.outputs.tag }} .
-        docker push insyst3m/notification-telegram-bot:${{ steps.docker.outputs.tag }}
+        docker buildx build --platform linux/arm64 -t insyst3m/notification-telegram-bot:${{ steps.docker.outputs.tag }} --push .
         docker logout
