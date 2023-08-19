@@ -8,17 +8,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    - name: Set docker tag
+      run: |
+        echo "tag=$(date +%s)" >> $GITHUB_OUTPUT
+      id: docker
+      
     - uses: actions/checkout@v3
     - name: Docker push
       env:
         DOCKER_USER: ${{ secrets.DOCKER_USER }}
         DOCKER_ACCESSTOKEN: ${{ secrets.DOCKER_ACCESSTOKEN }}
-        DOCKER_TAG: $(date +%s)
       run: |
-        echo docker tag: $DOCKER_TAG
         docker login -u $DOCKER_USER -p $DOCKER_ACCESSTOKEN
         cd Src
-        echo docker tag: $DOCKER_TAG
-        docker build . -t insyst3m/notification-telegram-bot:$DOCKER_TAG
-        docker push insyst3m/notification-telegram-bot:$DOCKER_TAG
+        docker build . -t insyst3m/notification-telegram-bot:${{ steps.docker.outputs.tag }}
+        docker push insyst3m/notification-telegram-bot:${{ steps.docker.outputs.tag }}
         docker logout
