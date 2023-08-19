@@ -5,14 +5,9 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
+  docker:
     runs-on: ubuntu-latest
     steps:
-    - name: Set docker tag
-      run: |
-        echo "tag=$(date +%Y%m%d%H%M)" >> $GITHUB_OUTPUT
-      id: docker
-      
     - uses: actions/checkout@v3
     - name: Docker push
       env:
@@ -21,6 +16,16 @@ jobs:
       run: |
         docker login -u $DOCKER_USER -p $DOCKER_ACCESSTOKEN
         cd Src
-        docker build . -t insyst3m/notification-telegram-bot:${{ steps.docker.outputs.tag }}
-        docker push insyst3m/notification-telegram-bot:${{ steps.docker.outputs.tag }}
+        docker build . -t insyst3m/notification-telegram-bot:latest
+        docker push insyst3m/notification-telegram-bot:latest
         docker logout
+
+  deploy:
+    name: Webhook call
+    runs-on: ubuntu-latest
+    needs: [docker]
+    steps:
+      - name: Deploy docker container webhook
+        uses: joelwmale/webhook-action@master
+        env:
+          WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL  }}
