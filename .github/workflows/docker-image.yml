@@ -13,11 +13,12 @@ jobs:
       env:
         DOCKER_USER: ${{ secrets.DOCKER_USER }}
         DOCKER_ACCESSTOKEN: ${{ secrets.DOCKER_ACCESSTOKEN }}
+        DOCKER_TAG: $(date +%s)
       run: |
-        echo tag:$(date +%s)
+        echo docker tag: $DOCKER_TAG
         docker login -u $DOCKER_USER -p $DOCKER_ACCESSTOKEN
         cd Src
-        docker build . -t insyst3m/notification-telegram-bot:$(date +%s)
-        echo tag:$(date +%s)
-        docker push insyst3m/notification-telegram-bot:$(date +%s)
+        echo docker tag: $DOCKER_TAG
+        docker build . -t insyst3m/notification-telegram-bot:$DOCKER_TAG
+        docker push insyst3m/notification-telegram-bot:$DOCKER_TAG
         docker logout
