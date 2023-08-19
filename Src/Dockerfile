@@ -12,10 +12,10 @@ RUN dotnet restore "NotificationTelegramBot.API/NotificationTelegramBot.API.cspr
 
 COPY . .
 WORKDIR "/Src/NotificationTelegramBot.API"
-RUN dotnet build "NotificationTelegramBot.API.csproj" -c Release -o /app/build
+RUN dotnet build "NotificationTelegramBot.API.csproj" -c Release --os linux --arch arm64 -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "NotificationTelegramBot.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "NotificationTelegramBot.API.csproj" -c Release --os linux --arch arm64 -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app

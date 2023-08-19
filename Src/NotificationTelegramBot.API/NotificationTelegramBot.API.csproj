@@ -8,6 +8,8 @@
 		<DockerDefaultTargetOS>linux</DockerDefaultTargetOS>
 		<DockerfileContext>.</DockerfileContext>
 		<DockerfileFile>..\Dockerfile</DockerfileFile>
+		<PlatformTarget>ARM64</PlatformTarget>
+		<Platforms>AnyCPU;ARM64</Platforms>
 	</PropertyGroup>
 
 	<ItemGroup>
