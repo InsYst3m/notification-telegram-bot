@@ -4,7 +4,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:7.0.10-jammy-arm64v8 AS base
 WORKDIR /app
 EXPOSE 80
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0.10-jammy-arm64v8 AS build
+FROM mcr.microsoft.com/dotnet/sdk:7.0.400-jammy-arm64v8 AS build
 WORKDIR /Src
 
 COPY ["NotificationTelegramBot.API/NotificationTelegramBot.API.csproj", "NotificationTelegramBot.API/"]
