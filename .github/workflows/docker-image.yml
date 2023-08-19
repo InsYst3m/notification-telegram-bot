@@ -10,7 +10,7 @@ jobs:
     steps:
     - name: Set docker tag
       run: |
-        echo "tag=$(date +%s)" >> $GITHUB_OUTPUT
+        echo "tag=$(date +%Y%m%d%H%M)" >> $GITHUB_OUTPUT
       id: docker
       
     - uses: actions/checkout@v3
