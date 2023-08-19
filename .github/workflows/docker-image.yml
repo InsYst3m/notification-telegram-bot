@@ -14,10 +14,7 @@ jobs:
         DOCKER_USER: ${{ secrets.DOCKER_USER }}
         DOCKER_ACCESSTOKEN: ${{ secrets.DOCKER_ACCESSTOKEN }}
       run: |
-        echo $HOME
-        ls Src -a
-        ls Src/NotificationTelegramBot.API -a
         docker login -u $DOCKER_USER -p $DOCKER_ACCESSTOKEN
-        docker build . --file Src/NotificationTelegramBot.API/Dockerfile --tag insyst3m/notification-telegram-bot:$(date +%s)
+        docker build -f Src/NotificationTelegramBot.API/Dockerfile --tag insyst3m/notification-telegram-bot:$(date +%s)
         docker push insyst3m/notification-telegram-bot:$(date +%s)
         docker logout
