@@ -14,9 +14,7 @@ jobs:
         DOCKER_USER: ${{ secrets.DOCKER_USER }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: |
-        echo $DOCKER_USER
-        docker logout
-        #docker login -u $DOCKER_USER --password-stdin $DOCKER_PASSWORD
+        docker login docker.pkg.github.com -u $DOCKER_USER --password-stdin
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag insyst3m/notification-telegram-bot:$(date +%s)
     - name: Docker push
