@@ -31,8 +31,8 @@ jobs:
             - name: Build
               run: |
                 echo $HOME
-                dotnet build ./Src/NotificationTelegramBot.sln --configuration Release --no-restore
-                dotnet publish ./Src/NotificationTelegramBot.sln -c Release -o build
+                dotnet build ./Src/NotificationTelegramBot.sln --configuration Release --no-restore -r linux-arm64
+                dotnet publish ./Src/NotificationTelegramBot.sln -c Release -o build -r linux-arm64
         
             - name: Run Tests
               run: |
