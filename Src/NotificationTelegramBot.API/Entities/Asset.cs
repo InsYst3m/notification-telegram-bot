@@ -8,5 +8,6 @@
         public required string Name { get; set; }
         public required decimal PriceUsd { get; set; }
         public required decimal VolumeUsd24Hr { get; set; }
+        public required decimal MarketCapUsd { get; set; }
     }
 }

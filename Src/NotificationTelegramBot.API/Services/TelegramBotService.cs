@@ -1,4 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 using Microsoft.Extensions.Options;
@@ -24,6 +26,7 @@ namespace NotificationTelegramBot.API.Services
         private readonly ICoinApiClient _coinApiClient;
         private readonly ILogger<TelegramBotService> _logger;
         private readonly CancellationTokenSource _tokenSource;
+        private readonly NumberFormatInfo _numberFormatInfo;
 
         public TelegramBotService(
             IOptions<NotificationTelegramBotOptions> options,
@@ -38,6 +41,8 @@ namespace NotificationTelegramBot.API.Services
 
             _options = options.Value;
             _tokenSource = new CancellationTokenSource();
+            _numberFormatInfo = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
+            _numberFormatInfo.NumberGroupSeparator = " ";
         }
 
         #region IHostedService Implementation
@@ -144,7 +149,14 @@ namespace NotificationTelegramBot.API.Services
                 {
                     Asset foundAsset = await _coinApiClient.GetCryptoAssetAsync(asset, cancellationToken);
 
-                    return $"{foundAsset.Name}: {foundAsset.PriceUsd:0.000 USD}";
+                    StringBuilder stringBuilder = new();
+                    stringBuilder.AppendLine($"{foundAsset.Name}:");
+                    stringBuilder.AppendLine($"Price: {foundAsset.PriceUsd.ToString("#,0.000", _numberFormatInfo)} USD");
+                    stringBuilder.AppendLine($"Rank: {foundAsset.Rank}");
+                    stringBuilder.AppendLine($"Capitalization: {foundAsset.MarketCapUsd.ToString("#,0.000", _numberFormatInfo)} USD");
+                    stringBuilder.AppendLine($"Volume 24 hours: {foundAsset.VolumeUsd24Hr.ToString("#,0.000", _numberFormatInfo)} USD");
+
+                    return stringBuilder.ToString();
                 }
                 catch
                 {

@@ -20,13 +20,4 @@
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.4" />
 		<PackageReference Include="Telegram.Bot" Version="19.0.0" />
 	</ItemGroup>
-
-	<ItemGroup>
-	  <None Remove="..\.dockerignore" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Remove="..\.dockerignore" />
-	</ItemGroup>
-
 </Project>
