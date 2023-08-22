@@ -150,7 +150,7 @@ namespace NotificationTelegramBot.API.Services
                     Asset foundAsset = await _coinApiClient.GetCryptoAssetAsync(asset, cancellationToken);
 
                     StringBuilder stringBuilder = new();
-                    stringBuilder.AppendLine($"{foundAsset.Name}:");
+                    stringBuilder.AppendLine($"Asset: {foundAsset.Name}");
                     stringBuilder.AppendLine($"Price: {foundAsset.PriceUsd.ToString("#,0.000", _numberFormatInfo)} USD");
                     stringBuilder.AppendLine($"Rank: {foundAsset.Rank}");
                     stringBuilder.AppendLine($"Capitalization: {foundAsset.MarketCapUsd.ToString("#,0.000", _numberFormatInfo)} USD");
