@@ -46,7 +46,7 @@ namespace NotificationTelegramBot.API.Clients
             return result;
         }
 
-        public async Task<Asset> GetCryptoAssetAsync(string asset, CancellationToken cancellationToken)
+        public async Task<Asset> GetAssetAsync(string asset, CancellationToken cancellationToken)
         {
             HttpClient httpClient =
                 _httpClientFactory.CreateClient(nameof(CoinApiClient));
@@ -61,6 +61,38 @@ namespace NotificationTelegramBot.API.Clients
             Asset? result = jsonDocument.RootElement
                 .GetProperty("data")
                 .Deserialize<Asset>(
+                    new JsonSerializerOptions
+                    {
+                        NumberHandling = JsonNumberHandling.AllowReadingFromString,
+                        PropertyNameCaseInsensitive = true
+                    });
+
+            if (result is null)
+            {
+                throw new BadHttpRequestException("Unable to parse HTTP response.");
+            }
+
+            return result;
+        }
+
+        public async Task<List<Asset>> GetAssetsAsync(string[] assets, CancellationToken cancellationToken)
+        {
+            HttpClient httpClient =
+                _httpClientFactory.CreateClient(nameof(CoinApiClient));
+
+            HttpResponseMessage httpResponse =
+                await httpClient.GetAsync(
+                    $"/v2/assets?ids={string.Join(',', assets)}",
+                    cancellationToken);
+
+            httpResponse.EnsureSuccessStatusCode();
+
+            string jsonResponse = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
+
+            JsonDocument jsonDocument = JsonDocument.Parse(jsonResponse);
+            List<Asset>? result = jsonDocument.RootElement
+                .GetProperty("data")
+                .Deserialize<List<Asset>>(
                     new JsonSerializerOptions
                     {
                         NumberHandling = JsonNumberHandling.AllowReadingFromString,

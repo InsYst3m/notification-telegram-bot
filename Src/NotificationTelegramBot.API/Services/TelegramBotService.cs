@@ -19,7 +19,7 @@ using Telegram.Bot.Types.Enums;
 
 namespace NotificationTelegramBot.API.Services
 {
-    public sealed class TelegramBotService : ITelegramBotService, IDisposable
+    public sealed class TelegramBotService : ITelegramBotService, INotificationService, IDisposable
     {
         private readonly NotificationTelegramBotOptions _options;
         private readonly ITelegramBotClient _telegramClient;
@@ -27,6 +27,10 @@ namespace NotificationTelegramBot.API.Services
         private readonly ILogger<TelegramBotService> _logger;
         private readonly CancellationTokenSource _tokenSource;
         private readonly NumberFormatInfo _numberFormatInfo;
+
+        private PeriodicTimer? _periodicTimer;
+        private DateTime _nextTimerTick;
+        private DateTime _previousTimerTick;
 
         public TelegramBotService(
             IOptions<NotificationTelegramBotOptions> options,
@@ -56,6 +60,8 @@ namespace NotificationTelegramBot.API.Services
                 HandleErrorAsync,
                 receiverOptions,
                 _tokenSource.Token);
+
+            Task.Run(() => SendDailyNotificationAsync(cancellationToken), cancellationToken);
 
             _logger.LogInformation("Telegram bot was successfully initialized.");
 
@@ -107,6 +113,26 @@ namespace NotificationTelegramBot.API.Services
 
         #endregion
 
+        #region INotificationService Implementation
+
+        public async Task SendDailyNotificationAsync(CancellationToken cancellationToken)
+        {
+            const short interval = 6;
+
+            _periodicTimer = new(TimeSpan.FromHours(6));
+            _nextTimerTick = _nextTimerTick.AddHours(interval);
+
+            while (await _periodicTimer.WaitForNextTickAsync(cancellationToken))
+            {
+                _previousTimerTick = _nextTimerTick;
+                _nextTimerTick = _nextTimerTick.AddHours(interval);
+
+                _ = OnSendDailyNotificationAsync(cancellationToken);
+            }
+        }
+
+        #endregion
+
         #region Event Handlers
 
         /// <summary>
@@ -133,6 +159,35 @@ namespace NotificationTelegramBot.API.Services
             await _telegramClient.SendTextMessageAsync(_options.ChatId, result, cancellationToken: cancellationToken);
         }
 
+        /// <summary>
+        /// Provides handler to periodicaly send notifications with asset prices.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        private async Task OnSendDailyNotificationAsync(CancellationToken cancellationToken)
+        {
+            string[] cryptoAssets = new[]
+            {
+                "bitcoin",
+                "ethereum",
+                "polkadot",
+                "near-protocol",
+                "litecoin",
+                "cosmos",
+                "xrp",
+                "solana",
+                "dash",
+                "cardano",
+                "mina",
+                "helium",
+                "polygon"
+            };
+
+            string result = await ProcessNotificationCommand(cryptoAssets, cancellationToken);
+
+            await _telegramClient.SendTextMessageAsync(
+                _options.ChatId, result, cancellationToken: cancellationToken);
+        }
+
         #endregion
 
         #region Private Members
@@ -147,16 +202,9 @@ namespace NotificationTelegramBot.API.Services
 
                 try
                 {
-                    Asset foundAsset = await _coinApiClient.GetCryptoAssetAsync(asset, cancellationToken);
+                    Asset foundAsset = await _coinApiClient.GetAssetAsync(asset, cancellationToken);
 
-                    StringBuilder stringBuilder = new();
-                    stringBuilder.AppendLine($"Asset: {foundAsset.Name}");
-                    stringBuilder.AppendLine($"Price: {foundAsset.PriceUsd.ToString("#,0.000", _numberFormatInfo)} USD");
-                    stringBuilder.AppendLine($"Rank: {foundAsset.Rank}");
-                    stringBuilder.AppendLine($"Capitalization: {foundAsset.MarketCapUsd.ToString("#,0.000", _numberFormatInfo)} USD");
-                    stringBuilder.AppendLine($"Volume 24 hours: {foundAsset.VolumeUsd24Hr.ToString("#,0.000", _numberFormatInfo)} USD");
-
-                    return stringBuilder.ToString();
+                    return GenerateCryptoAssetMessage(foundAsset);
                 }
                 catch
                 {
@@ -179,6 +227,37 @@ namespace NotificationTelegramBot.API.Services
             return "Unable to get available assets.";
         }
 
+        private async Task<string> ProcessNotificationCommand(string[] assets, CancellationToken cancellationToken)
+        {
+            List<Asset> foundAssets = await _coinApiClient.GetAssetsAsync(assets, cancellationToken);
+
+            return GenerateCryptoAssetsPriceMessage(foundAssets);
+        }
+
+        private string GenerateCryptoAssetMessage(Asset asset)
+        {
+            StringBuilder stringBuilder = new();
+            stringBuilder.AppendLine($"Asset: {asset.Name}");
+            stringBuilder.AppendLine($"Price: {asset.PriceUsd.ToString("#,0.000", _numberFormatInfo)} USD");
+            stringBuilder.AppendLine($"Rank: {asset.Rank}");
+            stringBuilder.AppendLine($"Capitalization: {asset.MarketCapUsd.ToString("#,0.000", _numberFormatInfo)} USD");
+            stringBuilder.AppendLine($"Volume 24 hours: {asset.VolumeUsd24Hr.ToString("#,0.000", _numberFormatInfo)} USD");
+
+            return stringBuilder.ToString();
+        }
+
+        private string GenerateCryptoAssetsPriceMessage(List<Asset> assets)
+        {
+            StringBuilder stringBuilder = new();
+
+            foreach (Asset asset in assets)
+            {
+                stringBuilder.AppendLine($"{asset.Name}: {asset.PriceUsd.ToString("#,0.000", _numberFormatInfo)} USD");
+            }
+            
+            return stringBuilder.ToString();
+        }
+
         #endregion
 
         #region IDiagnosticService Implementation
@@ -188,10 +267,15 @@ namespace NotificationTelegramBot.API.Services
 
         public Dictionary<string, string> GetDiagnosticsInfo()
         {
+            TimeZoneInfo mskTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById("Belarus Standard Time");
+
             return new Dictionary<string, string>
             {
-                { "Service Started Time MSK", TimeZoneInfo.ConvertTimeFromUtc(_serviceStartedTime, TimeZoneInfo.FindSystemTimeZoneById("MSK")).ToString() },
-                { "Service Uptime", _serviceUptime.ToString() }
+                { "Service Started Time MSK", TimeZoneInfo.ConvertTimeFromUtc(_serviceStartedTime, mskTimeZoneInfo).ToString() },
+                { "Service Uptime", _serviceUptime.ToString() },
+                { "Periodic Timer Initialized", (_periodicTimer is not null).ToString() },
+                { "Previous Timer Tick MSK", TimeZoneInfo.ConvertTimeFromUtc(_previousTimerTick, mskTimeZoneInfo).ToString() },
+                { "Next Timer Tick MSK", TimeZoneInfo.ConvertTimeFromUtc(_nextTimerTick, mskTimeZoneInfo).ToString() }
             };
         }
 
