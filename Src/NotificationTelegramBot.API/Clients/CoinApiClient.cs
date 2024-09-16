@@ -2,109 +2,108 @@
 using System.Text.Json.Serialization;
 
 using NotificationTelegramBot.API.Clients.Interfaces;
-using NotificationTelegramBot.API.Entities;
+using NotificationTelegramBot.API.Models;
 
-namespace NotificationTelegramBot.API.Clients
+namespace NotificationTelegramBot.API.Clients;
+
+public sealed class CoinApiClient : ICoinApiClient
 {
-    public sealed class CoinApiClient : ICoinApiClient
-    {
-        private readonly IHttpClientFactory _httpClientFactory;
+	private readonly IHttpClientFactory _httpClientFactory;
 
-        public CoinApiClient(IHttpClientFactory httpClientFactory)
-        {
-            _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
-        }
+	public CoinApiClient(IHttpClientFactory httpClientFactory)
+	{
+		_httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+	}
 
-        public async Task<List<string>> GetAvailableAssetsAsync(CancellationToken cancellationToken)
-        {
-            HttpClient httpClient =
-                _httpClientFactory.CreateClient(nameof(CoinApiClient));
+	public async Task<List<string>> GetAvailableAssetsAsync(CancellationToken cancellationToken)
+	{
+		HttpClient httpClient =
+			_httpClientFactory.CreateClient(nameof(CoinApiClient));
 
-            HttpResponseMessage httpResponse = await httpClient.GetAsync($"/v2/assets", cancellationToken);
+		HttpResponseMessage httpResponse = await httpClient.GetAsync($"/v2/assets", cancellationToken);
 
-            httpResponse.EnsureSuccessStatusCode();
+		httpResponse.EnsureSuccessStatusCode();
 
-            string jsonResponse = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
+		string jsonResponse = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
 
-            JsonDocument jsonDocument = JsonDocument.Parse(jsonResponse);
-            Asset[]? assets = jsonDocument.RootElement
-                .GetProperty("data")
-                .Deserialize<Asset[]>(
-                    new JsonSerializerOptions
-                    {
-                        NumberHandling = JsonNumberHandling.AllowReadingFromString,
-                        PropertyNameCaseInsensitive = true
-                    });
+		JsonDocument jsonDocument = JsonDocument.Parse(jsonResponse);
+		Asset[]? assets = jsonDocument.RootElement
+			.GetProperty("data")
+			.Deserialize<Asset[]>(
+				new JsonSerializerOptions
+				{
+					NumberHandling = JsonNumberHandling.AllowReadingFromString,
+					PropertyNameCaseInsensitive = true
+				});
 
-            List<string> result = new();
+		List<string> result = new();
 
-            if (assets is not null && assets.Any())
-            {
-                result.AddRange(assets.Select(x => x.Id));
-            }
+		if (assets is not null && assets.Any())
+		{
+			result.AddRange(assets.Select(x => x.Id));
+		}
 
-            return result;
-        }
+		return result;
+	}
 
-        public async Task<Asset> GetAssetAsync(string asset, CancellationToken cancellationToken)
-        {
-            HttpClient httpClient =
-                _httpClientFactory.CreateClient(nameof(CoinApiClient));
+	public async Task<Asset> GetAssetAsync(string asset, CancellationToken cancellationToken)
+	{
+		HttpClient httpClient =
+			_httpClientFactory.CreateClient(nameof(CoinApiClient));
 
-            HttpResponseMessage httpResponse = await httpClient.GetAsync($"/v2/assets/{asset}", cancellationToken);
+		HttpResponseMessage httpResponse = await httpClient.GetAsync($"/v2/assets/{asset}", cancellationToken);
 
-            httpResponse.EnsureSuccessStatusCode();
+		httpResponse.EnsureSuccessStatusCode();
 
-            string jsonResponse = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
+		string jsonResponse = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
 
-            JsonDocument jsonDocument = JsonDocument.Parse(jsonResponse);
-            Asset? result = jsonDocument.RootElement
-                .GetProperty("data")
-                .Deserialize<Asset>(
-                    new JsonSerializerOptions
-                    {
-                        NumberHandling = JsonNumberHandling.AllowReadingFromString,
-                        PropertyNameCaseInsensitive = true
-                    });
+		JsonDocument jsonDocument = JsonDocument.Parse(jsonResponse);
+		Asset? result = jsonDocument.RootElement
+			.GetProperty("data")
+			.Deserialize<Asset>(
+				new JsonSerializerOptions
+				{
+					NumberHandling = JsonNumberHandling.AllowReadingFromString,
+					PropertyNameCaseInsensitive = true
+				});
 
-            if (result is null)
-            {
-                throw new BadHttpRequestException("Unable to parse HTTP response.");
-            }
+		if (result is null)
+		{
+			throw new BadHttpRequestException("Unable to parse HTTP response.");
+		}
 
-            return result;
-        }
+		return result;
+	}
 
-        public async Task<List<Asset>> GetAssetsAsync(string[] assets, CancellationToken cancellationToken)
-        {
-            HttpClient httpClient =
-                _httpClientFactory.CreateClient(nameof(CoinApiClient));
+	public async Task<List<Asset>> GetAssetsAsync(string[] assets, CancellationToken cancellationToken)
+	{
+		HttpClient httpClient =
+			_httpClientFactory.CreateClient(nameof(CoinApiClient));
 
-            HttpResponseMessage httpResponse =
-                await httpClient.GetAsync(
-                    $"/v2/assets?ids={string.Join(',', assets)}",
-                    cancellationToken);
+		HttpResponseMessage httpResponse =
+			await httpClient.GetAsync(
+				$"/v2/assets?ids={string.Join(',', assets)}",
+				cancellationToken);
 
-            httpResponse.EnsureSuccessStatusCode();
+		httpResponse.EnsureSuccessStatusCode();
 
-            string jsonResponse = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
+		string jsonResponse = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
 
-            JsonDocument jsonDocument = JsonDocument.Parse(jsonResponse);
-            List<Asset>? result = jsonDocument.RootElement
-                .GetProperty("data")
-                .Deserialize<List<Asset>>(
-                    new JsonSerializerOptions
-                    {
-                        NumberHandling = JsonNumberHandling.AllowReadingFromString,
-                        PropertyNameCaseInsensitive = true
-                    });
+		JsonDocument jsonDocument = JsonDocument.Parse(jsonResponse);
+		List<Asset>? result = jsonDocument.RootElement
+			.GetProperty("data")
+			.Deserialize<List<Asset>>(
+				new JsonSerializerOptions
+				{
+					NumberHandling = JsonNumberHandling.AllowReadingFromString,
+					PropertyNameCaseInsensitive = true
+				});
 
-            if (result is null)
-            {
-                throw new BadHttpRequestException("Unable to parse HTTP response.");
-            }
+		if (result is null)
+		{
+			throw new BadHttpRequestException("Unable to parse HTTP response.");
+		}
 
-            return result;
-        }
-    }
+		return result;
+	}
 }

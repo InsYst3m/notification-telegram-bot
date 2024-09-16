@@ -1,3 +1,5 @@
+using Azure.Identity;
+
 using Microsoft.Extensions.Options;
 
 using NotificationTelegramBot.API.Clients;
@@ -5,71 +7,95 @@ using NotificationTelegramBot.API.Clients.Interfaces;
 using NotificationTelegramBot.API.Options;
 using NotificationTelegramBot.API.Services;
 using NotificationTelegramBot.API.Services.Interfaces;
+using NotificationTelegramBot.Database.Extensions;
 
 using Telegram.Bot;
 
-namespace NotificationTelegramBot.API
+try
 {
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
+	#region Base Configuration Setup
 
-            IServiceCollection services = builder.Services;
+	WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-            #region Services
+	IServiceCollection services = builder.Services;
+	IConfiguration configuration = builder.Configuration;
 
-            services.AddLogging(builder =>
-            {
-                builder.AddConsole();
-            });
+	#endregion
 
-            services
-                .AddOptions<NotificationTelegramBotOptions>()
-                .BindConfiguration(nameof(NotificationTelegramBotOptions))
-                .ValidateDataAnnotations()
-                .ValidateOnStart();
+	#region Configure Logging
 
-            services
-                .AddOptions<CoinApiOptions>()
-                .BindConfiguration(nameof(CoinApiOptions))
-                .ValidateDataAnnotations()
-                .ValidateOnStart();
+	services.AddLogging(builder =>
+	{
+		builder.AddConsole();
+	});
 
-            services.AddSingleton<ITelegramBotClient, TelegramBotClient>(
-                serviceProvider =>
-                {
-                    NotificationTelegramBotOptions options =
-                        serviceProvider.GetRequiredService<IOptions<NotificationTelegramBotOptions>>().Value;
+	#endregion
 
-                    return new TelegramBotClient(options.Token);
-                });
+	#region Configure Services
 
-            services.AddHttpClient(nameof(CoinApiClient), (serviceProvider, httpClient) =>
-            {
-                CoinApiOptions options =
-                    serviceProvider.GetRequiredService<IOptions<CoinApiOptions>>().Value;
+	services
+		.AddOptions<NotificationTelegramBotOptions>()
+		.BindConfiguration(nameof(NotificationTelegramBotOptions))
+		.ValidateDataAnnotations()
+		.ValidateOnStart();
 
-                httpClient.BaseAddress = new Uri(options.ServiceUrl);
-                httpClient.Timeout = TimeSpan.FromSeconds(options.TimeoutInSec);
-            });
+	services
+		.AddOptions<CoinApiOptions>()
+		.BindConfiguration(nameof(CoinApiOptions))
+		.ValidateDataAnnotations()
+		.ValidateOnStart();
 
-            services.AddSingleton<ICoinApiClient, CoinApiClient>();
-            services.AddSingleton<ITelegramBotService, TelegramBotService>();
-            services.AddSingleton<IDiagnosticService>(x => x.GetRequiredService<ITelegramBotService>());
+	services
+		.AddSingleton<DefaultAzureCredential>();
 
-            services.AddHostedService(x => x.GetRequiredService<ITelegramBotService>());
+	services.AddDatabaseLayer(configuration);
 
-            #endregion
+	services.AddSingleton<ITelegramBotClient, TelegramBotClient>(
+		serviceProvider =>
+		{
+			NotificationTelegramBotOptions options =
+				serviceProvider.GetRequiredService<IOptions<NotificationTelegramBotOptions>>().Value;
 
-            #region Middlewares
+			return new TelegramBotClient(options.Token);
+		});
 
-            var app = builder.Build();
+	services.AddHttpClient(nameof(CoinApiClient), (serviceProvider, httpClient) =>
+	{
+		CoinApiOptions options =
+			serviceProvider.GetRequiredService<IOptions<CoinApiOptions>>().Value;
 
-            #endregion
+		httpClient.BaseAddress = new Uri(options.ServiceUrl);
+		httpClient.Timeout = TimeSpan.FromSeconds(options.TimeoutInSec);
+	});
 
-            app.Run();
-        }
-    }
+	services.AddSingleton<ICoinApiClient, CoinApiClient>();
+	services.AddSingleton<ITelegramBotService, TelegramBotService>();
+	services.AddSingleton<IDiagnosticService>(x => x.GetRequiredService<ITelegramBotService>());
+
+	services.AddHostedService(x => x.GetRequiredService<ITelegramBotService>());
+
+	#endregion
+
+	#region Configure Middleware Pipeline
+
+	WebApplication app = builder.Build();
+
+	#endregion
+
+	Console.WriteLine("Starting application host.");
+
+	await app.RunAsync();
 }
+catch (Exception ex)
+{
+	Console.WriteLine(ex.Message);
+}
+finally
+{
+	Console.WriteLine("Stopped application host.");
+}
+
+/// <summary>
+/// The main entry point for the application.
+/// </summary>
+public partial class Program { }
