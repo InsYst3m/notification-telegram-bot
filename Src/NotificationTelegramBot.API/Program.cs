@@ -69,6 +69,7 @@ try
 	});
 
 	services.AddSingleton<ICoinApiClient, CoinApiClient>();
+	services.AddSingleton<IUserService, UserService>();
 	services.AddSingleton<ITelegramBotService, TelegramBotService>();
 	services.AddSingleton<IDiagnosticService>(x => x.GetRequiredService<ITelegramBotService>());
 
