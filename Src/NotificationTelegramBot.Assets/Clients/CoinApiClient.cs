@@ -1,10 +1,10 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using NotificationTelegramBot.API.Clients.Interfaces;
-using NotificationTelegramBot.API.Models;
+using NotificationTelegramBot.Assets.Clients.Interfaces;
+using NotificationTelegramBot.Assets.Entities;
 
-namespace NotificationTelegramBot.API.Clients;
+namespace NotificationTelegramBot.Assets.Clients;
 
 public sealed class CoinApiClient : ICoinApiClient
 {
@@ -69,7 +69,7 @@ public sealed class CoinApiClient : ICoinApiClient
 
 		if (result is null)
 		{
-			throw new BadHttpRequestException("Unable to parse HTTP response.");
+			throw new InvalidOperationException("Unable to parse HTTP response.");
 		}
 
 		return result;
@@ -101,7 +101,7 @@ public sealed class CoinApiClient : ICoinApiClient
 
 		if (result is null)
 		{
-			throw new BadHttpRequestException("Unable to parse HTTP response.");
+			throw new InvalidOperationException("Unable to parse HTTP response.");
 		}
 
 		return result;

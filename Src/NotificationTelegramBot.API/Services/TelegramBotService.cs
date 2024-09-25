@@ -4,11 +4,11 @@ using System.Text.RegularExpressions;
 
 using Microsoft.Extensions.Options;
 
-using NotificationTelegramBot.API.Clients.Interfaces;
 using NotificationTelegramBot.API.Constants;
-using NotificationTelegramBot.API.Models;
 using NotificationTelegramBot.API.Options;
 using NotificationTelegramBot.API.Services.Interfaces;
+using NotificationTelegramBot.Assets.Entities;
+using NotificationTelegramBot.Assets.Services.Interfaces;
 
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
@@ -22,7 +22,7 @@ namespace NotificationTelegramBot.API.Services
 	{
 		private readonly NotificationTelegramBotOptions _options;
 		private readonly ITelegramBotClient _telegramClient;
-		private readonly ICoinApiClient _coinApiClient;
+		private readonly IAssetService _assetService;
 		private readonly ILogger<TelegramBotService> _logger;
 		private readonly CancellationTokenSource _tokenSource;
 		private readonly NumberFormatInfo _numberFormatInfo;
@@ -34,12 +34,12 @@ namespace NotificationTelegramBot.API.Services
 		public TelegramBotService(
 			IOptions<NotificationTelegramBotOptions> options,
 			ITelegramBotClient client,
-			ICoinApiClient coinApiClient,
+			IAssetService assetService,
 			ILogger<TelegramBotService> logger)
 		{
 			_ = options ?? throw new ArgumentNullException(nameof(options));
 			_telegramClient = client ?? throw new ArgumentNullException(nameof(client));
-			_coinApiClient = coinApiClient ?? throw new ArgumentNullException(nameof(coinApiClient));
+			_assetService = assetService ?? throw new ArgumentNullException(nameof(assetService));
 			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
 			_options = options.Value;
@@ -201,7 +201,7 @@ namespace NotificationTelegramBot.API.Services
 
 				try
 				{
-					Asset foundAsset = await _coinApiClient.GetAssetAsync(asset, cancellationToken);
+					Asset foundAsset = await _assetService.GetAssetAsync(asset, cancellationToken);
 
 					return GenerateCryptoAssetMessage(foundAsset);
 				}
@@ -216,7 +216,7 @@ namespace NotificationTelegramBot.API.Services
 
 		private async Task<string> ProcessAssetsCommandAsync(CancellationToken cancellationToken)
 		{
-			List<string> availableAssets = await _coinApiClient.GetAvailableAssetsAsync(cancellationToken);
+			List<string> availableAssets = await _assetService.GetAvailableAssetsAsync(cancellationToken);
 
 			if (availableAssets.Any())
 			{
@@ -228,7 +228,7 @@ namespace NotificationTelegramBot.API.Services
 
 		private async Task<string> ProcessNotificationCommand(string[] assets, CancellationToken cancellationToken)
 		{
-			List<Asset> foundAssets = await _coinApiClient.GetAssetsAsync(assets, cancellationToken);
+			List<Asset> foundAssets = await _assetService.GetAssetsAsync(assets, cancellationToken);
 
 			return GenerateCryptoAssetsPriceMessage(foundAssets);
 		}

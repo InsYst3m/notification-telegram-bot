@@ -20,6 +20,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationTelegramBot.Steam", "NotificationTelegramBot.Steam\NotificationTelegramBot.Steam.csproj", "{3D12E56A-1639-4C41-BFA1-DF5A80CB39C4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationTelegramBot.Assets", "NotificationTelegramBot.Assets\NotificationTelegramBot.Assets.csproj", "{C4144D6B-99C3-4A34-8957-170B0584FFED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{EC3A8F83-BAEB-4C51-93F4-725F0C9AF824}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +56,22 @@ Global
 		{3D12E56A-1639-4C41-BFA1-DF5A80CB39C4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3D12E56A-1639-4C41-BFA1-DF5A80CB39C4}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{3D12E56A-1639-4C41-BFA1-DF5A80CB39C4}.Release|ARM64.Build.0 = Release|Any CPU
+		{C4144D6B-99C3-4A34-8957-170B0584FFED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4144D6B-99C3-4A34-8957-170B0584FFED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4144D6B-99C3-4A34-8957-170B0584FFED}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{C4144D6B-99C3-4A34-8957-170B0584FFED}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{C4144D6B-99C3-4A34-8957-170B0584FFED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4144D6B-99C3-4A34-8957-170B0584FFED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4144D6B-99C3-4A34-8957-170B0584FFED}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{C4144D6B-99C3-4A34-8957-170B0584FFED}.Release|ARM64.Build.0 = Release|Any CPU
+		{EC3A8F83-BAEB-4C51-93F4-725F0C9AF824}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC3A8F83-BAEB-4C51-93F4-725F0C9AF824}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC3A8F83-BAEB-4C51-93F4-725F0C9AF824}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{EC3A8F83-BAEB-4C51-93F4-725F0C9AF824}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{EC3A8F83-BAEB-4C51-93F4-725F0C9AF824}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC3A8F83-BAEB-4C51-93F4-725F0C9AF824}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC3A8F83-BAEB-4C51-93F4-725F0C9AF824}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{EC3A8F83-BAEB-4C51-93F4-725F0C9AF824}.Release|ARM64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,4 @@
-﻿namespace NotificationTelegramBot.API.Models;
+﻿namespace NotificationTelegramBot.Assets.Entities;
 
 public sealed class Asset
 {

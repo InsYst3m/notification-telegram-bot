@@ -14,6 +14,7 @@
 
 	<ItemGroup>
 		<Folder Include="Controllers\" />
+		<Folder Include="Models\" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -23,6 +24,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\NotificationTelegramBot.Assets\NotificationTelegramBot.Assets.csproj" />
 	  <ProjectReference Include="..\NotificationTelegramBot.Database\NotificationTelegramBot.Database.csproj" />
 	</ItemGroup>
 </Project>

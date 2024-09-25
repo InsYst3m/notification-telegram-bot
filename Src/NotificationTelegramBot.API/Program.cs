@@ -2,11 +2,10 @@ using Azure.Identity;
 
 using Microsoft.Extensions.Options;
 
-using NotificationTelegramBot.API.Clients;
-using NotificationTelegramBot.API.Clients.Interfaces;
 using NotificationTelegramBot.API.Options;
 using NotificationTelegramBot.API.Services;
 using NotificationTelegramBot.API.Services.Interfaces;
+using NotificationTelegramBot.Assets.Extensions;
 using NotificationTelegramBot.Database.Extensions;
 
 using Telegram.Bot;
@@ -40,15 +39,10 @@ try
 		.ValidateOnStart();
 
 	services
-		.AddOptions<CoinApiOptions>()
-		.BindConfiguration(nameof(CoinApiOptions))
-		.ValidateDataAnnotations()
-		.ValidateOnStart();
-
-	services
 		.AddSingleton<DefaultAzureCredential>();
 
 	services.AddDatabaseLayer(configuration);
+	services.AddAssetsModule();
 
 	services.AddSingleton<ITelegramBotClient, TelegramBotClient>(
 		serviceProvider =>
@@ -59,16 +53,6 @@ try
 			return new TelegramBotClient(options.Token);
 		});
 
-	services.AddHttpClient(nameof(CoinApiClient), (serviceProvider, httpClient) =>
-	{
-		CoinApiOptions options =
-			serviceProvider.GetRequiredService<IOptions<CoinApiOptions>>().Value;
-
-		httpClient.BaseAddress = new Uri(options.ServiceUrl);
-		httpClient.Timeout = TimeSpan.FromSeconds(options.TimeoutInSec);
-	});
-
-	services.AddSingleton<ICoinApiClient, CoinApiClient>();
 	services.AddSingleton<IUserService, UserService>();
 	services.AddSingleton<ITelegramBotService, TelegramBotService>();
 	services.AddSingleton<IDiagnosticService>(x => x.GetRequiredService<ITelegramBotService>());
