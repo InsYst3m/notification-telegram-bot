@@ -54,10 +54,12 @@ try
 		});
 
 	services.AddSingleton<IUserService, UserService>();
+	services.AddSingleton<IMessageProvider, MessageProvider>();
+	services.AddSingleton<INotificationService, NotificationService>();
 	services.AddSingleton<ITelegramBotService, TelegramBotService>();
-	services.AddSingleton<IDiagnosticService>(x => x.GetRequiredService<ITelegramBotService>());
 
-	services.AddHostedService(x => x.GetRequiredService<ITelegramBotService>());
+	services.AddHostedService(x => (TelegramBotService)x.GetRequiredService<ITelegramBotService>());
+	services.AddHostedService(x => (NotificationService)x.GetRequiredService<INotificationService>());
 
 	#endregion
 

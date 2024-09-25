@@ -1,7 +1,8 @@
-﻿namespace NotificationTelegramBot.API.Services.Interfaces
+﻿using Telegram.Bot;
+
+namespace NotificationTelegramBot.API.Services.Interfaces;
+
+public interface INotificationService
 {
-    public interface INotificationService
-    {
-        Task SendDailyNotificationAsync(CancellationToken cancellationToken);
-    }
+	Task StartPeriodicNotificationsAsync(CancellationToken cancellationToken);
 }
