@@ -11,7 +11,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deployment", "Deployment", 
 		Dockerfile = Dockerfile
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationTelegramBot.Database", "NotificationTelegramBot.Database\NotificationTelegramBot.Database.csproj", "{1C97C42F-7E3B-44B6-BC6E-A8A9891CD6C4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NotificationTelegramBot.Database", "NotificationTelegramBot.Database\NotificationTelegramBot.Database.csproj", "{1C97C42F-7E3B-44B6-BC6E-A8A9891CD6C4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6356D704-4595-4ECF-B3D5-A671ABF55C0C}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationTelegramBot.Steam", "NotificationTelegramBot.Steam\NotificationTelegramBot.Steam.csproj", "{3D12E56A-1639-4C41-BFA1-DF5A80CB39C4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,6 +44,14 @@ Global
 		{1C97C42F-7E3B-44B6-BC6E-A8A9891CD6C4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1C97C42F-7E3B-44B6-BC6E-A8A9891CD6C4}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{1C97C42F-7E3B-44B6-BC6E-A8A9891CD6C4}.Release|ARM64.Build.0 = Release|Any CPU
+		{3D12E56A-1639-4C41-BFA1-DF5A80CB39C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D12E56A-1639-4C41-BFA1-DF5A80CB39C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D12E56A-1639-4C41-BFA1-DF5A80CB39C4}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{3D12E56A-1639-4C41-BFA1-DF5A80CB39C4}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{3D12E56A-1639-4C41-BFA1-DF5A80CB39C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D12E56A-1639-4C41-BFA1-DF5A80CB39C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D12E56A-1639-4C41-BFA1-DF5A80CB39C4}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{3D12E56A-1639-4C41-BFA1-DF5A80CB39C4}.Release|ARM64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
