@@ -8,7 +8,6 @@ using NotificationTelegramBot.API.Infrastructure.Providers.Interfaces;
 using NotificationTelegramBot.API.Options;
 using NotificationTelegramBot.API.Services.Interfaces;
 using NotificationTelegramBot.Assets.Entities;
-using NotificationTelegramBot.Assets.Services.Interfaces;
 
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
@@ -23,8 +22,6 @@ public sealed class TelegramBotService : ITelegramBotService, IHostedService, ID
 	private readonly NotificationTelegramBotOptions _options;
 	private readonly ITelegramBotClient _telegramClient;
 	private readonly ICommandProvider _commandProvider;
-	private readonly IAssetService _assetService;
-	private readonly IMessageProvider _messageProvider;
 	private readonly ILogger<TelegramBotService> _logger;
 	private readonly CancellationTokenSource _tokenSource;
 
@@ -32,21 +29,15 @@ public sealed class TelegramBotService : ITelegramBotService, IHostedService, ID
 		IOptions<NotificationTelegramBotOptions> options,
 		ITelegramBotClient telegramClient,
 		ICommandProvider commandProvider,
-		IAssetService assetService,
-		IMessageProvider messageProvider,
 		ILogger<TelegramBotService> logger)
 	{
 		ArgumentNullException.ThrowIfNull(options);
 		ArgumentNullException.ThrowIfNull(telegramClient);
-		ArgumentNullException.ThrowIfNull(assetService);
 		ArgumentNullException.ThrowIfNull(commandProvider);
-		ArgumentNullException.ThrowIfNull(messageProvider);
 		ArgumentNullException.ThrowIfNull(logger);
 
 		_telegramClient = telegramClient;
-		_assetService = assetService;
 		_commandProvider = commandProvider;
-		_messageProvider = messageProvider;
 		_logger = logger;
 
 		_options = options.Value;
@@ -133,50 +124,6 @@ public sealed class TelegramBotService : ITelegramBotService, IHostedService, ID
 		{
 			return _commandProvider.NotFound;
 		}
-
-
-		//string result = string.Empty;
-
-		//if (!string.IsNullOrWhiteSpace(message.Text))
-		//{
-		//	result = message.Text switch
-		//	{
-		//		string text when text.Equals(Commands.ASSETS_COMMAND, StringComparison.OrdinalIgnoreCase) =>
-		//			await ProcessAssetsCommandAsync(cancellationToken),
-		//		string text when text.StartsWith(Commands.GET_COMMAND) =>
-		//			await ProcessGetCommandAsync(text, cancellationToken),
-		//		_ => $"Unable to parse command: '{message.Text}'."
-		//	};
-		//}
-
-		//await _telegramClient.SendTextMessageAsync(_options.ChatId, result, cancellationToken: cancellationToken);
-	}
-
-	#endregion
-
-	#region Private Members
-
-	private async Task<string> ProcessGetCommandAsync(string getCommand, CancellationToken cancellationToken)
-	{
-		Match match = Regexes.GetCommandRegex().Match(getCommand);
-
-		if (match.Success)
-		{
-			string asset = match.Groups[2].Value;
-
-			try
-			{
-				Asset foundAsset = await _assetService.GetAssetAsync(asset, cancellationToken);
-
-				return _messageProvider.GenerateCryptoAssetMessage(foundAsset);
-			}
-			catch
-			{
-				return $"Unable to found asset: '{asset}'.";
-			}
-		}
-
-		return $"Unable to parse command: '{getCommand}'.";
 	}
 
 	#endregion

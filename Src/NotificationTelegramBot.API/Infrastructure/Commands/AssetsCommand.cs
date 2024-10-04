@@ -8,7 +8,7 @@ public sealed class AssetsCommand : ICommand
 {
 	#region Constants
 
-	public const string NAME = "assets";
+	public const string NAME = "/assets";
 
 	#endregion
 

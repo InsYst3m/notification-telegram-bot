@@ -31,6 +31,12 @@ public sealed class CommandProvider : ICommandProvider
 				new AssetsCommand(
 					_serviceProvider.GetRequiredService<IAssetService>(),
 					_serviceProvider.GetRequiredService<ITelegramBotClient>()),
+			string value when text.StartsWith(AssetCommand.NAME, StringComparison.OrdinalIgnoreCase) =>
+				new AssetCommand(
+					_serviceProvider.GetRequiredService<IAssetService>(),
+					_serviceProvider.GetRequiredService<IMessageProvider>(),
+					_serviceProvider.GetRequiredService<ITelegramBotClient>(),
+					value),
 			_ => NotFound
 		};
 
