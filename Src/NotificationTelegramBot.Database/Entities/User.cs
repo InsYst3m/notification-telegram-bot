@@ -23,7 +23,14 @@ public sealed class User
 	public required string Name { get; set; }
 
 	/// <summary>
+	/// Defines a flag by which system can determine whether the user is subscribed to daily notifications about <see cref="FavouriteAssets"/>.
+	/// </summary>
+	public bool NotifyAboutFavouriteAssets { get; set; }
+
+	/// <summary>
 	/// The user telegram chat identifier.
 	/// </summary>
 	public long ChatId { get; set; }
+
+	public List<string> FavouriteAssets { get; set; } = new();
 }

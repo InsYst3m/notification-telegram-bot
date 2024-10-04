@@ -7,7 +7,7 @@ namespace NotificationTelegramBot.Database.Extensions;
 /// <summary>
 /// Provides database related extensions.
 /// </summary>
-public static class DatabaseExtensions
+public static class DependencyInjection
 {
 	/// <summary>
 	/// Adds database layer.

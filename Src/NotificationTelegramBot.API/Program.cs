@@ -1,9 +1,11 @@
 using Azure.Identity;
 
 using Microsoft.Extensions.Options;
-
+using NotificationTelegramBot.API.Infrastructure.Providers;
+using NotificationTelegramBot.API.Infrastructure.Providers.Interfaces;
+using NotificationTelegramBot.API.Infrastructure.Services;
+using NotificationTelegramBot.API.Infrastructure.Services.Interfaces;
 using NotificationTelegramBot.API.Options;
-using NotificationTelegramBot.API.Services;
 using NotificationTelegramBot.API.Services.Interfaces;
 using NotificationTelegramBot.Assets.Extensions;
 using NotificationTelegramBot.Database.Extensions;
@@ -55,6 +57,7 @@ try
 
 	services.AddSingleton<IUserService, UserService>();
 	services.AddSingleton<IMessageProvider, MessageProvider>();
+	services.AddSingleton<ICommandProvider, CommandProvider>();
 	services.AddSingleton<INotificationService, NotificationService>();
 	services.AddSingleton<ITelegramBotService, TelegramBotService>();
 

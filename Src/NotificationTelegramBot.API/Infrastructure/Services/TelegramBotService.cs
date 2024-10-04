@@ -3,6 +3,8 @@
 using Microsoft.Extensions.Options;
 
 using NotificationTelegramBot.API.Constants;
+using NotificationTelegramBot.API.Infrastructure.Commands;
+using NotificationTelegramBot.API.Infrastructure.Providers.Interfaces;
 using NotificationTelegramBot.API.Options;
 using NotificationTelegramBot.API.Services.Interfaces;
 using NotificationTelegramBot.Assets.Entities;
@@ -14,12 +16,13 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace NotificationTelegramBot.API.Services;
+namespace NotificationTelegramBot.API.Infrastructure.Services;
 
 public sealed class TelegramBotService : ITelegramBotService, IHostedService, IDisposable
 {
 	private readonly NotificationTelegramBotOptions _options;
 	private readonly ITelegramBotClient _telegramClient;
+	private readonly ICommandProvider _commandProvider;
 	private readonly IAssetService _assetService;
 	private readonly IMessageProvider _messageProvider;
 	private readonly ILogger<TelegramBotService> _logger;
@@ -27,16 +30,24 @@ public sealed class TelegramBotService : ITelegramBotService, IHostedService, ID
 
 	public TelegramBotService(
 		IOptions<NotificationTelegramBotOptions> options,
-		ITelegramBotClient client,
+		ITelegramBotClient telegramClient,
+		ICommandProvider commandProvider,
 		IAssetService assetService,
 		IMessageProvider messageProvider,
 		ILogger<TelegramBotService> logger)
 	{
-		_ = options ?? throw new ArgumentNullException(nameof(options));
-		_telegramClient = client ?? throw new ArgumentNullException(nameof(client));
-		_assetService = assetService ?? throw new ArgumentNullException(nameof(assetService));
-		_messageProvider = messageProvider ?? throw new ArgumentNullException(nameof(messageProvider));
-		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
+		ArgumentNullException.ThrowIfNull(options);
+		ArgumentNullException.ThrowIfNull(telegramClient);
+		ArgumentNullException.ThrowIfNull(assetService);
+		ArgumentNullException.ThrowIfNull(commandProvider);
+		ArgumentNullException.ThrowIfNull(messageProvider);
+		ArgumentNullException.ThrowIfNull(logger);
+
+		_telegramClient = telegramClient;
+		_assetService = assetService;
+		_commandProvider = commandProvider;
+		_messageProvider = messageProvider;
+		_logger = logger;
 
 		_options = options.Value;
 		_tokenSource = new CancellationTokenSource();
@@ -87,15 +98,15 @@ public sealed class TelegramBotService : ITelegramBotService, IHostedService, ID
 
 	public async Task HandleUpdateAsync(ITelegramBotClient client, Update update, CancellationToken cancellationToken)
 	{
-		Task handler = update.Type switch
+		ICommand command = update.Type switch
 		{
-			UpdateType.Message => OnMessageReceivedAsync(update.Message!, cancellationToken),
-			_ => Task.CompletedTask
+			UpdateType.Message => OnMessageReceived(update.Message!, cancellationToken),
+			_ => _commandProvider.NotFound
 		};
 
 		try
 		{
-			await handler;
+			await command.ExecuteAsync(update.Message!.Chat.Id);
 		}
 		catch (Exception ex)
 		{
@@ -110,25 +121,35 @@ public sealed class TelegramBotService : ITelegramBotService, IHostedService, ID
 	/// <summary>
 	/// Provides handler to process incoming messages from the telegram bot.
 	/// </summary>
-	/// <param name="message"></param>
-	/// <param name="cancellationToken"></param>
-	private async Task OnMessageReceivedAsync(Message message, CancellationToken cancellationToken)
+	/// <param name="message">The telegram message.</param>
+	/// <param name="cancellationToken">The cancellation token.</param>
+	private ICommand OnMessageReceived(Message message, CancellationToken cancellationToken)
 	{
-		string result = string.Empty;
-
-		if (!string.IsNullOrWhiteSpace(message.Text))
+		if (message.Type is MessageType.Text)
 		{
-			result = message.Text switch
-			{
-				string text when text.Equals(Commands.ASSETS_COMMAND, StringComparison.OrdinalIgnoreCase) =>
-					await ProcessAssetsCommandAsync(cancellationToken),
-				string text when text.StartsWith(Commands.GET_COMMAND) =>
-					await ProcessGetCommandAsync(text, cancellationToken),
-				_ => $"Unable to parse command: '{message.Text}'."
-			};
+			return _commandProvider.GetOrCreate(message.Text);
+		}
+		else
+		{
+			return _commandProvider.NotFound;
 		}
 
-		await _telegramClient.SendTextMessageAsync(_options.ChatId, result, cancellationToken: cancellationToken);
+
+		//string result = string.Empty;
+
+		//if (!string.IsNullOrWhiteSpace(message.Text))
+		//{
+		//	result = message.Text switch
+		//	{
+		//		string text when text.Equals(Commands.ASSETS_COMMAND, StringComparison.OrdinalIgnoreCase) =>
+		//			await ProcessAssetsCommandAsync(cancellationToken),
+		//		string text when text.StartsWith(Commands.GET_COMMAND) =>
+		//			await ProcessGetCommandAsync(text, cancellationToken),
+		//		_ => $"Unable to parse command: '{message.Text}'."
+		//	};
+		//}
+
+		//await _telegramClient.SendTextMessageAsync(_options.ChatId, result, cancellationToken: cancellationToken);
 	}
 
 	#endregion
@@ -156,18 +177,6 @@ public sealed class TelegramBotService : ITelegramBotService, IHostedService, ID
 		}
 
 		return $"Unable to parse command: '{getCommand}'.";
-	}
-
-	private async Task<string> ProcessAssetsCommandAsync(CancellationToken cancellationToken)
-	{
-		List<string> availableAssets = await _assetService.GetAvailableAssetsAsync(cancellationToken);
-
-		if (availableAssets.Any())
-		{
-			return string.Join(", ", availableAssets);
-		}
-
-		return "Unable to get available assets.";
 	}
 
 	#endregion
