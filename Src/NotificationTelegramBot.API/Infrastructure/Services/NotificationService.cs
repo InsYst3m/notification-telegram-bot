@@ -25,26 +25,6 @@ public sealed class NotificationService : INotificationService, IHostedService, 
 	private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
 	private readonly ILogger<NotificationService> _logger;
 
-	/// <summary>
-	/// TODO: Mode to the database.
-	/// </summary>
-	private readonly string[] _predefinedCryptoAssets = new[]
-	{
-		"bitcoin",
-		"ethereum",
-		"polkadot",
-		"near-protocol",
-		"litecoin",
-		"cosmos",
-		"xrp",
-		"solana",
-		"dash",
-		"cardano",
-		"mina",
-		"helium",
-		"polygon"
-	};
-
 	#endregion
 
 	#region Constructors
@@ -133,14 +113,14 @@ public sealed class NotificationService : INotificationService, IHostedService, 
 			.Include(x => x.FavouriteAssets)
 			.ToList();
 
-		string[] assets = subscribers
+		List<string> assets = subscribers
 			.SelectMany(x => x.FavouriteAssets)
 			.Distinct()
-			.ToArray();
+			.ToList();
 
 		if (!assets.Any())
 		{
-			assets = _predefinedCryptoAssets;
+			assets = await _assetService.GetFavouriteAssetsAsync(0, cancellationToken);
 		}
 
 		List<Asset> foundAssets = await _assetService.GetAssetsAsync(assets, cancellationToken);

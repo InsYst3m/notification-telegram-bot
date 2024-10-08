@@ -75,7 +75,7 @@ public sealed class CoinApiClient : ICoinApiClient
 		return result;
 	}
 
-	public async Task<List<Asset>> GetAssetsAsync(string[] assets, CancellationToken cancellationToken)
+	public async Task<List<Asset>> GetAssetsAsync(ICollection<string> assets, CancellationToken cancellationToken)
 	{
 		HttpClient httpClient =
 			_httpClientFactory.CreateClient(nameof(CoinApiClient));

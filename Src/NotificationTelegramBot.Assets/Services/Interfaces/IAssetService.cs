@@ -7,5 +7,6 @@ public interface IAssetService
 
 	Task<List<string>> GetAvailableAssetsAsync(CancellationToken cancellationToken);
 
-	Task<List<Asset>> GetAssetsAsync(string[] assets, CancellationToken cancellationToken);
+	Task<List<Asset>> GetAssetsAsync(ICollection<string> assets, CancellationToken cancellationToken);
+	Task<List<string>> GetFavouriteAssetsAsync(long chatId, CancellationToken cancellationToken);
 }
