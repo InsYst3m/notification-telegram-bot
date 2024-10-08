@@ -1,0 +1,12 @@
+Ubuntu:
+	1) sudo snap install docker
+	2) sudo snap connect docker:home
+	3) https://docs.docker.com/engine/install/linux-postinstall/#configure-docker-to-start-on-boot-with-systemd
+
+Docker:
+	1) docker login
+	2) docker image pull <TAG from docker hub>
+	3) docker image ls
+	4) docker run -d --restart=always --env-file <path> <image>
+	6) docker ps -a
+	7) docker start <container id>
